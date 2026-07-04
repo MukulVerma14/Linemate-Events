@@ -15,7 +15,16 @@ const BookingSchema = new mongoose.Schema(
     seatsBooked: {
       type: Number,
       required: [true, 'Please specify the number of seats to book'],
-      min: [1, 'Must book at least 1 seat'],
+      validate: {
+        validator: function (value) {
+          const status = this ? (this.status || (typeof this.getUpdate === 'function' && this.getUpdate() && this.getUpdate().status)) : undefined;
+          if (status === 'Cancelled') {
+            return value >= 0;
+          }
+          return value >= 1;
+        },
+        message: 'Must book at least 1 seat for an active booking',
+      },
     },
     status: {
       type: String,
